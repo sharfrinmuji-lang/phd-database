@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logout</title>
+  <link rel="stylesheet" href="css/login.css">
+  <style>
+    /* Override or add specific styles for logout page if needed */
+    .logout-container {
+      background: white;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      border-top: 5px solid #4b0082;
+      position: relative;
+      z-index: 2;
+      max-width: 400px;
+      width: 90%;
+    }
+
+    .logout-message {
+      margin-bottom: 30px;
+      font-size: 18px;
+      color: #333;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    .btn-secondary {
+      background-color: #6c757d;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Background Watermark -->
+  <div class="background-watermark"></div>
+
+  <!-- Professional Header -->
+  <header>
+    <img src="images/banner.png" alt="College Banner" class="header-banner">
+  </header>
+
+  <div class="main-content">
+    <div class="logout-container">
+      <div class="logout-message">
+        <h2>Are you sure you want to logout?</h2>
+      </div>
+      <div class="btn-group">
+        <button onclick="logout()" class="btn-primary" style="width: auto;">Yes, Logout</button>
+        <a href="dashboard.html" class="btn-secondary">Cancel</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function logout() {
+      localStorage.removeItem("loggedInUser");
+      localStorage.removeItem("userRole");
+      localStorage.removeItem("authToken");
+      window.location.href = "login.html";
+    }
+  </script>
+
+</body>
+
+</html>

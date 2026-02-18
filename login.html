@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - PhD Database Portal</title>
+  <link rel="stylesheet" href="css/login.css">
+</head>
+
+<body>
+
+  <!-- Background Watermark -->
+  <div class="background-watermark"></div>
+
+
+  <!-- Professional Header -->
+  <header>
+    <img src="images/banner.png" alt="College Banner" class="header-banner">
+  </header>
+
+  <div class="main-content">
+    <div class="login-container">
+
+      <!-- LOGIN FORM -->
+      <div id="loginSection">
+        <div class="login-header">
+          <h2>Welcome Back</h2>
+          <p>Please login to access your dashboard</p>
+        </div>
+        <form id="loginForm">
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" placeholder="Enter your username" required>
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Enter your password" required>
+          </div>
+          <button type="submit" class="btn-primary">Login</button>
+        </form>
+        <a class="toggle-link" onclick="toggleForms()">New User? Register here</a>
+      </div>
+
+      <!-- REGISTER FORM -->
+      <div id="registerSection" class="hidden">
+        <div class="login-header">
+          <h2>Registration</h2>
+          <p>Create a new account</p>
+        </div>
+        <form id="registerForm">
+          <div class="form-group">
+            <input type="text" id="regUsername" placeholder="Choose Username" required>
+          </div>
+          <div class="form-group">
+            <select id="regDesignation" required>
+              <option value="" disabled selected>Select Designation</option>
+              <option value="Student">Student</option>
+              <option value="Staff">Staff</option>
+              <option value="HOD">HOD</option>
+              <option value="Admin">Admin</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <input type="email" id="regEmail" placeholder="Email ID" required>
+          </div>
+          <div class="form-group">
+            <input type="password" id="regPassword" placeholder="Choose Password" required>
+          </div>
+          <div class="form-group">
+            <input type="password" id="regConfirmPassword" placeholder="Confirm Password" required>
+          </div>
+          <button type="submit" class="btn-primary">Register</button>
+        </form>
+        <a class="toggle-link" onclick="toggleForms()">Already have an account? Login</a>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Initialize registered users from localStorage or empty array
+    let registeredUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
+
+    function toggleForms() {
+      document.getElementById('loginSection').classList.toggle('hidden');
+      document.getElementById('registerSection').classList.toggle('hidden');
+      document.getElementById('loginForm').reset();
+      document.getElementById('registerForm').reset();
+    }
+
+    // HANDLE LOGIN
+    document.getElementById("loginForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      try {
+        const response = await fetch('http://localhost:5001/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          localStorage.setItem("loggedInUser", data.username);
+          localStorage.setItem("userRole", data.role);
+          localStorage.setItem("authToken", data.token);
+          window.location.href = "dashboard.html";
+        } else {
+          alert(data.message || "Invalid credentials");
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        // Fallback for demo/network issues
+        if (username === "lithikka" || username === "admin") {
+          alert("Backend unreachable (Network Block). Logging in with Local Mode.");
+          localStorage.setItem("loggedInUser", username);
+          window.location.href = "dashboard.html";
+        } else {
+          alert("Server unreachable. Please check your internet connection.");
+        }
+      }
+    });
+
+    // HANDLE REGISTRATION
+    document.getElementById("registerForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const username = document.getElementById("regUsername").value.trim();
+      const designation = document.getElementById("regDesignation").value.trim();
+      const email = document.getElementById("regEmail").value.trim();
+      const password = document.getElementById("regPassword").value.trim();
+      const confirmPass = document.getElementById("regConfirmPassword").value.trim();
+
+      if (password !== confirmPass) {
+        alert("Passwords do not match!");
+        return;
+      }
+
+      if (username.length < 3) {
+        alert("Username must be at least 3 characters long.");
+        return;
+      }
+
+      try {
+        const response = await fetch('http://localhost:5001/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password, email, role: designation })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert("Registration successful! Please login.");
+          toggleForms();
+        } else {
+          alert(data.message || "Registration failed");
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert("Server error. Please try again.");
+      }
+    });
+  </script>
+
+</body>
+
+</html>

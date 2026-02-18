@@ -1,0 +1,65 @@
+/* ============================= */
+/* View Records Page Styles      */
+/* ============================= */
+
+/* Records container */
+.records-container {
+  background-color: #fff;
+  padding: 20px;
+  margin: 40px auto;
+  border-radius: 10px;
+  max-width: 400px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Heading */
+h2 {
+  color: #003366;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Table styling */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+th,
+td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+  font-size: 14px;
+}
+
+th {
+  background-color: #f0f0f0;
+}
+
+/* Buttons inside table */
+td button {
+  width: auto;
+  padding: 5px 10px;
+  margin-right: 5px;
+  font-size: 13px;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 480px) {
+  .records-container {
+    margin: 20px;
+    padding: 15px;
+  }
+
+  h2 {
+    font-size: 18px;
+  }
+
+  th,
+  td {
+    font-size: 12px;
+    padding: 6px;
+  }
+}

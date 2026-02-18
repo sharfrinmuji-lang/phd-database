@@ -1,0 +1,2486 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>PhD Database App - Complete</title>
+  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+
+  <style>
+    :root {
+      --bg-color: #f4f7f6;
+      --text-color: #333;
+      --card-bg: #ffffff;
+      --sidebar-bg: #ffffff;
+      --header-bg: #ffffff;
+      --border-color: #eee;
+      --nav-btn-bg: #ffffff;
+      --nav-btn-text: #333;
+      --hover-bg: #f0f7ff;
+      --hover-text: #003366;
+      --muted-text: #666;
+      --primary-color: #003366;
+      --accent-color: #e614b8;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #1a1a2e;
+      --text-color: #eaeaea;
+      --card-bg: #16213e;
+      --sidebar-bg: #0f3460;
+      --header-bg: #16213e;
+      --border-color: #2a2a40;
+      --nav-btn-bg: #16213e;
+      --nav-btn-text: #eaeaea;
+      --hover-bg: #1a1a2e;
+      --hover-text: #e614b8;
+      --muted-text: #bbb;
+      --primary-color: #66b2ff;
+      --accent-color: #ff85e0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .background-watermark {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url("images/background1.jpeg");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: 0.4;
+      /* Watermark effect */
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    header {
+      background-color: var(--header-bg);
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      z-index: 10;
+      width: 100%;
+      height: auto;
+      position: relative;
+    }
+
+    .dark-mode-toggle {
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--text-color);
+      z-index: 20;
+    }
+
+    .breadcrumbs {
+      padding: 10px 20px;
+      background-color: var(--card-bg);
+      border-bottom: 1px solid var(--border-color);
+      font-size: 14px;
+      color: #666;
+    }
+
+    .breadcrumbs span {
+      cursor: pointer;
+    }
+
+    .breadcrumbs span:hover {
+      text-decoration: underline;
+      color: #007bff;
+    }
+
+    .header-banner {
+      width: 100%;
+      height: auto;
+      object-fit: cover;
+      max-height: 150px;
+    }
+
+    .nav-wrapper {
+      background-image: url("nav-bg.jpg");
+      padding: 15px;
+      text-align: center;
+    }
+
+    .nav-wrapper button {
+      background-color: #4b0082;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 5px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+
+    .nav-wrapper button:hover,
+    .nav-wrapper button.active {
+      background-color: #6a0dad;
+      color: white;
+      box-shadow: 0 4px 10px rgba(75, 0, 130, 0.4);
+      transform: translateY(-2px);
+    }
+
+    /* Notifications Styles */
+    .notification-card {
+      background: var(--card-bg);
+      border-left: 5px solid #007bff;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      margin-bottom: 15px;
+      padding: 15px;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--text-color);
+    }
+
+    .notification-card.urgent {
+      border-left-color: #dc3545;
+    }
+
+    .notification-card.success {
+      border-left-color: #28a745;
+    }
+
+    .notification-content h4 {
+      margin: 0 0 5px;
+      color: var(--text-color);
+    }
+
+    .notification-content p {
+      margin: 0;
+      color: var(--muted-text);
+      font-size: 14px;
+    }
+
+    /* SIDEBAR STYLES */
+    .sidebar {
+      height: 100%;
+      width: 300px;
+      position: fixed;
+      z-index: 1000;
+      top: 0;
+      left: -300px;
+      background-color: var(--sidebar-bg);
+      overflow-x: hidden;
+      transition: 0.5s;
+      padding-top: 60px;
+      box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar.active {
+      left: 0;
+    }
+
+    .sidebar-header {
+      padding: 0 20px 20px;
+      border-bottom: 1px solid #eee;
+      margin-bottom: 20px;
+    }
+
+    .sidebar-profile-pic {
+      width: 80px;
+      height: 80px;
+      background: #003366;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      margin-bottom: 15px;
+    }
+
+    .sidebar h3 {
+      margin: 0;
+      color: var(--text-color);
+      font-size: 20px;
+    }
+
+    .sidebar p {
+      margin: 5px 0;
+      color: var(--muted-text);
+      font-size: 14px;
+    }
+
+    .sidebar-links {
+      padding: 0 10px;
+    }
+
+    .sidebar-link {
+      padding: 12px 15px;
+      text-decoration: none;
+      font-size: 16px;
+      color: var(--text-color);
+      display: block;
+      transition: 0.3s;
+      border-radius: 8px;
+      margin-bottom: 5px;
+      cursor: pointer;
+    }
+
+    .sidebar-link:hover {
+      background-color: var(--hover-bg);
+      color: var(--hover-text);
+    }
+
+    /* Calendar Styles */
+    #calendar {
+      max-width: 100%;
+      margin: 0 auto;
+    }
+
+    [data-theme="dark"] .fc {
+      --fc-page-bg-color: var(--card-bg);
+      --fc-neutral-bg-color: var(--bg-color);
+      --fc-list-event-hover-bg-color: var(--hover-bg);
+      --fc-theme-standard-border-color: var(--border-color);
+      color: var(--text-color);
+    }
+
+    [data-theme="dark"] .fc-col-header-cell-cushion,
+    [data-theme="dark"] .fc-daygrid-day-number {
+      color: var(--text-color);
+      text-decoration: none;
+    }
+
+    [data-theme="dark"] .fc-button-primary {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+
+    .fc-event {
+      cursor: pointer;
+    }
+
+    /* Sidebar Icons */
+    .sidebar-link i {
+      margin-right: 10px;
+      width: 20px;
+      text-align: center;
+    }
+
+    .sidebar-close {
+      position: absolute;
+      top: 20px;
+      right: 25px;
+      font-size: 36px;
+      color: #003366;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .hamburger-menu {
+      position: absolute;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 30px;
+      cursor: pointer;
+      color: #003366;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 5px 10px;
+      border-radius: 5px;
+      z-index: 100;
+    }
+
+    .sidebar-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      z-index: 999;
+    }
+
+    .sidebar-overlay.active {
+      display: block;
+    }
+
+
+    .notification-time {
+      font-size: 12px;
+      color: #999;
+      white-space: nowrap;
+      margin-left: 10px;
+    }
+
+    section {
+      padding: 20px;
+      display: none;
+    }
+
+    section.active {
+      display: block;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 60%;
+      max-width: 400px;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      box-sizing: border-box;
+      background-color: var(--card-bg);
+      color: var(--text-color);
+    }
+
+    textarea {
+      height: 90px;
+    }
+
+    button[type="submit"] {
+      width: 60%;
+      max-width: 400px;
+      padding: 12px;
+      background-color: #975f97 !important;
+      color: white !important;
+      border: none;
+      border-radius: 6px;
+      font-size: 18px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: var(--card-bg);
+      color: var(--text-color);
+    }
+
+    th,
+    td {
+      border: 1px solid var(--border-color);
+      padding: 10px;
+      text-align: left;
+    }
+
+    .btn-delete {
+      background-color: #ff4d4d;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .btn-delete:hover {
+      background-color: #cc0000;
+    }
+
+    .otp-btn {
+      background-color: #0077cc;
+      color: white;
+      padding: 8px 15px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .literature-section,
+    .synopsis-section,
+    .provision-section,
+    .degree-section {
+      width: 60%;
+      max-width: 400px;
+      margin: 10px 0;
+      display: none;
+    }
+
+    .literature-section.active,
+    .synopsis-section.active,
+    .provision-section.active,
+    .degree-section.active {
+      display: block;
+    }
+
+    .literature-inputs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .literature-inputs input {
+      flex: 1;
+    }
+
+    .remove-entry-btn {
+      background-color: #ff4d4d;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      margin-top: 5px;
+      width: 100%;
+    }
+
+    .status-group {
+      display: flex;
+      gap: 10px;
+      margin: 10px 0;
+      align-items: center;
+    }
+
+    .status-group input[type="date"] {
+      width: 150px;
+    }
+
+    .status-group label {
+      width: 140px;
+      font-weight: bold;
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .file-input-wrapper input[type="file"] {
+      position: absolute;
+      left: -9999px;
+    }
+
+    .file-input-label {
+      display: inline-block;
+      width: auto;
+      min-width: 200px;
+      padding: 10px 20px;
+      background-color: #0077cc;
+      color: white;
+      border-radius: 6px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 14px;
+      margin-bottom: 0;
+    }
+
+    .upload-buttons-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .file-input-label:hover {
+      background-color: #005fa3;
+    }
+
+    .file-preview {
+      display: none;
+      margin-top: 10px;
+      padding: 8px;
+      background: #f8f9fa;
+      border-radius: 4px;
+      font-size: 12px;
+      word-break: break-all;
+    }
+
+    .file-preview:not(:empty) {
+      display: block;
+    }
+
+    .file-preview.valid {
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+    }
+
+    .file-preview.invalid {
+      background: #f8d7da;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+    }
+
+    .file-entry {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      padding: 10px;
+      background: var(--card-bg);
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+    }
+
+    /* Timeline Styles */
+    .timeline {
+      position: relative;
+      max-width: 900px;
+      margin: 40px auto;
+    }
+
+    .timeline::after {
+      content: '';
+      position: absolute;
+      width: 6px;
+      background-color: #975f97;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      margin-left: -3px;
+      border-radius: 3px;
+    }
+
+    .timeline-container {
+      padding: 10px 40px;
+      position: relative;
+      background-color: inherit;
+      width: 50%;
+      box-sizing: border-box;
+    }
+
+    .timeline-container.left {
+      left: 0;
+    }
+
+    .timeline-container.right {
+      left: 50%;
+    }
+
+    .timeline-container::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      right: -13px;
+      background-color: white;
+      border: 4px solid #e614b8;
+      top: 20px;
+      border-radius: 50%;
+      z-index: 1;
+    }
+
+    .timeline-container.right::after {
+      left: -13px;
+    }
+
+    .timeline-content {
+      padding: 20px;
+      background-color: var(--card-bg);
+      position: relative;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      border-left: 5px solid #975f97;
+      color: var(--text-color);
+    }
+
+    .timeline-container.right .timeline-content {
+      border-left: none;
+      border-right: 5px solid #975f97;
+    }
+
+    .timeline-content h3 {
+      margin: 0 0 10px;
+      color: #975f97;
+      font-size: 18px;
+    }
+
+    .timeline-content p {
+      margin: 0;
+      color: var(--muted-text);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .timeline-date {
+      display: inline-block;
+      margin-bottom: 8px;
+      padding: 4px 10px;
+      background-color: #f0f0f0;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    /* Student Progress Card & Stepper Styles */
+    .progress-card {
+      background: var(--card-bg);
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin-bottom: 20px;
+      border-left: 5px solid #975f97;
+      color: var(--text-color);
+    }
+
+    .progress-card h3 {
+      margin-top: 0;
+      color: var(--text-color);
+    }
+
+    .progress-card p {
+      margin: 5px 0;
+      color: var(--muted-text);
+    }
+
+    /* Stepper */
+    .stepper-wrapper {
+      margin-top: 30px;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .stepper-item {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      z-index: 2;
+    }
+
+    .stepper-item::before {
+      position: absolute;
+      content: "";
+      border-bottom: 2px solid #ccc;
+      width: 100%;
+      top: 15px;
+      left: -50%;
+      z-index: 1;
+    }
+
+    .stepper-item::after {
+      position: absolute;
+      content: "";
+      border-bottom: 2px solid #ccc;
+      width: 100%;
+      top: 15px;
+      left: 50%;
+      z-index: 1;
+    }
+
+    .stepper-item:first-child::before {
+      content: none;
+    }
+
+    .stepper-item:last-child::after {
+      content: none;
+    }
+
+    .step-counter {
+      position: relative;
+      z-index: 5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #ccc;
+      margin-bottom: 6px;
+      color: white;
+      font-weight: bold;
+    }
+
+    .stepper-item.completed .step-counter {
+      background-color: #28a745;
+      /* Green for completed */
+    }
+
+    .stepper-item.completed::after,
+    .stepper-item.completed::before {
+      border-bottom-color: #28a745;
+      /* Green line */
+    }
+
+    .stepper-item.active .step-counter {
+      background-color: #007bff;
+      /* Blue for current active */
+    }
+
+    .step-name {
+      font-size: 12px;
+      text-align: center;
+      color: #333;
+      font-weight: bold;
+    }
+
+    /* Dropdown within card */
+    .progress-update-area {
+      margin-top: 15px;
+      padding-top: 10px;
+      border-top: 1px solid #eee;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .progress-update-area select {
+      width: auto;
+      max-width: 250px;
+      padding: 5px;
+    }
+
+    /* Media queries for stepper on small screens */
+    @media screen and (max-width: 768px) {
+      .stepper-wrapper {
+        flex-direction: column;
+        gap: 0;
+        align-items: flex-start;
+        padding-left: 20px;
+      }
+
+      .stepper-item {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 15px;
+        width: 100%;
+        margin-bottom: 15px;
+        min-height: 40px;
+      }
+
+      .stepper-item::before,
+      .stepper-item::after {
+        position: absolute;
+        content: "";
+        border-left: 2px solid #ccc;
+        /* Vertical line */
+        border-bottom: none;
+        width: 0;
+        height: 100%;
+        left: 15px;
+        /* Half of 30px counter width */
+        top: -50%;
+        z-index: 1;
+      }
+
+      .stepper-item:first-child::before {
+        content: none;
+      }
+
+      .stepper-item:last-child::after {
+        content: none;
+      }
+
+      .stepper-item.completed::before,
+      .stepper-item.completed::after {
+        border-left-color: #28a745;
+      }
+
+      .step-counter {
+        margin-bottom: 0;
+        flex-shrink: 0;
+      }
+
+      .step-name {
+        text-align: left;
+        padding-top: 5px;
+      }
+    }
+
+    /* DASHBOARD ENHANCEMENTS */
+    .dashboard-grid {
+      display: block;
+      /* Simplified layout */
+      margin-top: 20px;
+    }
+
+    .university-banner {
+      background: linear-gradient(135deg, #003366, #0055aa);
+      color: white;
+      padding: 50px;
+      border-radius: 15px;
+      margin-bottom: 25px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .university-banner h1 {
+      margin: 0;
+      font-size: 36px;
+      font-weight: 800;
+    }
+
+    .university-banner p {
+      margin: 15px 0 0;
+      opacity: 0.9;
+      font-size: 18px;
+    }
+
+
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border-left: 5px solid #003366;
+    }
+
+    .stat-card h4 {
+      margin: 0;
+      font-size: 14px;
+      color: var(--muted-text);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+
+    .stat-card .value {
+      font-size: 32px;
+      font-weight: bold;
+      color: var(--primary-color);
+      margin-top: 8px;
+    }
+
+    .percentage-badge {
+      background: #e614b8;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 15px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 10px;
+      background: #e9ecef;
+      border-radius: 5px;
+      margin: 10px 0 20px 0;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #e614b8, #975f97);
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+
+    .stages-checklist {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .stage-item {
+      display: flex;
+      align-items: center;
+      font-size: 13px;
+      color: #666;
+      padding: 5px;
+    }
+
+    .stage-item.completed {
+      color: #28a745;
+      font-weight: bold;
+    }
+
+    .stage-item i {
+      margin-right: 8px;
+      font-size: 16px;
+    }
+
+    .status-icon {
+      width: 18px;
+      height: 18px;
+      margin-right: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      font-size: 12px;
+    }
+
+    .status-icon.completed {
+      background: #28a745;
+      color: white;
+    }
+
+    .status-icon.pending {
+      border: 2px solid #ddd;
+      color: transparent;
+    }
+
+    .status-icon.active {
+      border: 2px solid #e614b8;
+      color: #e614b8;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(230, 20, 184, 0.7);
+      }
+
+      70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(230, 20, 184, 0);
+      }
+
+      100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(230, 20, 184, 0);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="background-watermark"></div>
+  <header style="position: relative;">
+    <div class="hamburger-menu" id="hamburgerBtn" onclick="toggleSidebar()">☰</div>
+    <img src="images/banner.png" alt="College Banner" class="header-banner">
+    <button class="dark-mode-toggle" onclick="toggleTheme()" title="Toggle Dark Mode">🌓</button>
+  </header>
+
+  <div class="breadcrumbs" id="breadcrumbs">
+    <span onclick="showSection('dashboard')">Home</span> > <span id="breadcrumb-current">Dashboard</span>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div id="sideDrawer" class="sidebar">
+    <span class="sidebar-close" onclick="toggleSidebar()">&times;</span>
+    <div class="sidebar-header">
+      <div class="sidebar-profile-pic">👨‍🎓</div>
+      <h3 id="side-username">User Name</h3>
+      <p id="side-role">Designation</p>
+      <p id="side-email">email@university.edu</p>
+    </div>
+    <div class="sidebar-links">
+      <div class="sidebar-link" onclick="showSection('dashboard'); toggleSidebar()">Dashboard</div>
+      <div id="side-research-link" class="sidebar-link">My Research Workspace</div>
+      <div id="side-progress-link" class="sidebar-link"
+        onclick="showSection('progress-timeline'); displayProgress(); toggleSidebar()">Progress Tracking</div>
+      <div class="sidebar-link" onclick="showSection('notifications'); displayNotifications(); toggleSidebar()">
+        Alerts & Notifications</div>
+      <a class="sidebar-link" onclick="showSection('ipr-policy'); toggleSidebar()"><i>📜</i> IPR Policy</a>
+      <a class="sidebar-link" onclick="showSection('incentives-policy'); toggleSidebar()"><i>💰</i> Incentives
+        Policy</a>
+      <a class="sidebar-link" onclick="showSection('calendar-scheduler'); toggleSidebar()"><i>📅</i> DC Calendar</a>
+    </div>
+    <hr style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
+    <div class="sidebar-link" onclick="toggleSettingsSubmenu('Bottom')"
+      style="background: #f8f9fa; display: flex; justify-content: space-between; align-items: center; padding: 12px 15px;">
+      <span>⚙️ Settings</span>
+      <span id="settingsCaretBottom">▾</span>
+    </div>
+    <div id="settingsSubmenuBottom" style="display: none; padding-left: 15px; margin-bottom: 20px;">
+      <div class="sidebar-link" onclick="window.location.href='logout.html'" style="color: #d9534f;">🚪 Logout</div>
+    </div>
+  </div>
+  <div id="drawerOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+
+  <div class="nav-wrapper">
+    <button onclick="showSection('dashboard'); updateDashboardStats()">Dashboard</button>
+    <button id="nav-btn-add" onclick="showSection('add-student')">Add New Student</button>
+    <button id="nav-btn-view" onclick="showSection('view-records')">View All Records</button>
+    <button id="nav-btn-search" onclick="showSection('search')">Search</button>
+    <button onclick="showSection('progress-timeline'); displayProgress()">Progress</button>
+    <button onclick="showSection('notifications'); displayNotifications()">Notifications</button>
+    <button onclick="showSection('ipr-policy')">IPRs Policy</button>
+
+    <button onclick="showSection('incentives-policy')">Incentives Policy</button>
+    <button onclick="showSection('calendar-scheduler')">DC Calendar</button>
+  </div>
+
+  <!-- NOTIFICATIONS SECTION -->
+  <section id="notifications">
+    <h2>Notifications & Alerts</h2>
+    <div id="notificationList">
+      <!-- Notifications will be loaded here -->
+      <p>No new notifications.</p>
+    </div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section id="dashboard" class="active" style="background: transparent; box-shadow: none; padding: 0;">
+
+
+    <div class="dashboard-grid">
+      <main>
+        <div class="stats-container">
+          <div class="stat-card">
+            <h4>Total PhD Scholars</h4>
+            <div class="value" id="stat-total">0</div>
+          </div>
+          <div class="stat-card">
+            <h4>Incentive Requests</h4>
+            <div class="value">05</div>
+          </div>
+          <div class="stat-card">
+            <h4>Research Activities</h4>
+            <div class="value" style="font-size: 16px; color: #666; font-weight: normal; margin-top: 10px;">
+              • Publications Overview<br>
+              • Thesis Progress Tracking<br>
+              • DC Meeting Reminders
+            </div>
+          </div>
+        </div>
+
+        <div
+          style="margin-top: 25px; background: var(--card-bg); padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+          <h3 style="color: var(--primary-color); margin-bottom: 20px; font-size: 20px;">Important Announcements</h3>
+          <ul style="list-style: none; padding: 0;">
+            <li
+              style="padding: 15px 0; border-bottom: 1px solid var(--border-color); display: flex; gap: 15px; align-items: center;">
+              <span
+                style="color: var(--accent-color); font-weight: bold; background: rgba(230, 20, 184, 0.1); padding: 2px 8px; border-radius: 4px; font-size: 12px;">NEW</span>
+              <span style="color: var(--text-color);">Synopsis submission portal is now active for 2026 batch.</span>
+            </li>
+            <li
+              style="padding: 15px 0; border-bottom: 1px solid var(--border-color); display: flex; gap: 15px; align-items: center;">
+              <span
+                style="color: var(--primary-color); font-weight: bold; background: rgba(0, 51, 102, 0.1); padding: 2px 8px; border-radius: 4px; font-size: 12px;">INFO</span>
+              <span style="color: var(--text-color);">IPR Policy guidelines updated. Please review in the policy
+                section.</span>
+            </li>
+          </ul>
+        </div>
+      </main>
+    </div>
+  </section>
+
+  <!-- ADD STUDENT -->
+  <section id="add-student">
+    <h2>Add New PhD Student</h2>
+    <form onsubmit="addStudent(event)">
+      <input type="text" id="name" placeholder="Full Name" required>
+      <input type="email" id="email" placeholder="Email" required>
+
+
+
+      <input type="text" id="phone" placeholder="Phone Number" required>
+
+
+
+      <input type="text" id="university" placeholder="University" required>
+      <input type="text" id="department" placeholder="Department" required>
+
+      <select id="usertype" required>
+        <option value="">Select User Type</option>
+        <option value="Student">Student</option>
+        <option value="Staff">Staff</option>
+        <option value="HOD">HOD</option>
+        <option value="Principal">Principal</option>
+      </select>
+
+      <textarea id="topic" placeholder="Research Topic" required></textarea>
+
+      <input type="number" id="year" placeholder="Year of Enrollment" required>
+
+      <select id="status" required>
+        <option value="">Select Status</option>
+        <option>Ongoing</option>
+        <option>Completed</option>
+        <option>Dropped</option>
+      </select>
+
+      <!-- Literature Review Select -->
+      <select id="literatureReview" onchange="toggleLiteratureSection()">
+        <option value="">Select Literature Review</option>
+        <option value="yes">Yes - Add Paper Publications</option>
+        <option value="no">No</option>
+      </select>
+
+      <!-- Paper Publication Details Section -->
+      <div id="literatureSection" class="literature-section">
+        <label>Paper Publication Details</label>
+        <div id="literatureContainer">
+          <div class="literature-entry">
+            <div class="literature-inputs">
+              <input type="text" class="lit-paperTitle" placeholder="Paper Title" maxlength="200">
+              <input type="text" class="lit-journal" placeholder="Journal/Conference" maxlength="100">
+            </div>
+            <div class="literature-inputs" style="margin-top: 5px;">
+              <input type="text" class="lit-publisher" placeholder="Publisher" maxlength="100">
+              <input type="text" class="lit-pubYear" placeholder="Publication Year" maxlength="4">
+            </div>
+            <input type="text" class="lit-doi" placeholder="DOI/ISBN (Optional)" maxlength="100">
+            <button type="button" class="remove-entry-btn" onclick="removeLiteratureEntry(this)">Remove</button>
+          </div>
+        </div>
+        <button type="button" class="otp-btn" onclick="addLiteratureEntry()" style="width: 100%; margin-top: 10px;">Add
+          Another Publication</button>
+      </div>
+
+      <!-- Synopsis Submission Select -->
+      <select id="synopsisSubmission" onchange="toggleSynopsisSection()">
+        <option value="">Select Synopsis Submission</option>
+        <option value="yes">Yes - Add Synopsis Details</option>
+        <option value="no">No</option>
+      </select>
+
+      <!-- Synopsis Submission Section -->
+      <!-- Synopsis Submission Section -->
+      <div id="synopsisSection" class="synopsis-section">
+        <h3>Synopsis Submission Details</h3>
+        <label>Synopsis PDF (Max 10MB)</label>
+        <div class="upload-buttons-row">
+          <div class="file-input-wrapper" id="synopsisMainWrapper">
+            <input type="file" id="synopsisFile" accept="application/pdf" onchange="handleSynopsisFile(this)">
+            <label class="file-input-label" for="synopsisFile">Choose PDF File</label>
+            <div id="synopsisFilePreview" class="file-preview"></div>
+          </div>
+          <button type="button" class="file-input-label" onclick="addSynopsisFile()" style="border:none;">Add
+            Another</button>
+        </div>
+        <div id="synopsisFilesList"></div>
+      </div>
+
+      <!-- PROVISION CERTIFICATE -->
+      <!-- PROVISION CERTIFICATE -->
+      <div id="provisionSection" class="provision-section active">
+        <label>Provision Certificate (JPG/IMG/PDF - Max 10MB)</label>
+        <div class="upload-buttons-row">
+          <div class="file-input-wrapper" id="provisionMainWrapper">
+            <input type="file" id="provisionFile" accept="image/jpeg,image/jpg,image/png,application/pdf"
+              onchange="handleProvisionFile(this)">
+            <label class="file-input-label" for="provisionFile">Choose JPG/IMG/PDF File</label>
+            <div id="provisionFilePreview" class="file-preview"></div>
+          </div>
+          <button type="button" class="file-input-label" onclick="addProvisionFile()" style="border:none;">Add
+            Another</button>
+        </div>
+        <div id="provisionFilesList"></div>
+      </div>
+
+      <!-- DEGREE CERTIFICATE -->
+      <div id="degreeSection" class="degree-section active">
+        <label>Degree Certificate (JPG/IMG/PDF - Max 10MB)</label>
+        <div class="upload-buttons-row">
+          <div class="file-input-wrapper" id="degreeMainWrapper">
+            <input type="file" id="degreeFile" accept="image/jpeg,image/jpg,image/png,application/pdf"
+              onchange="handleDegreeFile(this)">
+            <label class="file-input-label" for="degreeFile">Choose JPG/IMG/PDF File</label>
+            <div id="degreeFilePreview" class="file-preview"></div>
+          </div>
+          <button type="button" class="file-input-label" onclick="addDegreeFile()" style="border:none;">Add
+            Another</button>
+        </div>
+        <div id="degreeFilesList"></div>
+      </div>
+
+      <button type="submit">Add Student</button>
+    </form>
+  </section>
+
+  <!-- VIEW RECORDS -->
+  <section id="view-records">
+    <h2>All PhD Students</h2>
+    <table id="studentTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Topic</th>
+          <th>Status</th>
+          <th>Publications</th>
+          <th>Synopsis Files</th>
+          <th>Provision Files</th>
+          <th>Degree Files</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- SEARCH -->
+  <section id="search">
+    <h2>Search Student</h2>
+    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+      <input type="text" id="searchInput" placeholder="Search by Name or Topic" onkeyup="searchStudent()"
+        style="margin: 0; flex: 1;">
+      <button class="otp-btn" onclick="clearSearch()" style="width: auto; margin: 0; padding: 0 20px;">Clear
+        Search</button>
+    </div>
+    <div style="overflow-x: auto;">
+      <table id="searchResults">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Topic</th>
+            <th>University</th>
+            <th>Department</th>
+            <th>Year</th>
+            <th>Status</th>
+            <th>Synopsis</th>
+            <th>Publications</th>
+            <th>Provision</th>
+            <th>Degree</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- STUDENT PROGRESS -->
+  <section id="progress-timeline">
+    <h2>PhD Student Progress</h2>
+    <div id="progress-container">
+      <!-- Progress Cards will be populated here -->
+    </div>
+  </section>
+
+  <!-- IPR POLICY -->
+  <section id="ipr-policy">
+    <h2>IPRs Policy</h2>
+    <p>Intellectual Property Rights policy details...</p>
+  </section>
+
+  <!-- INCENTIVES POLICY -->
+  <section id="incentives-policy">
+    <h2>Incentives Policy</h2>
+    <p>Incentives policy details...</p>
+  </section>
+
+  <!-- CALENDAR SCHEDULER -->
+  <section id="calendar-scheduler">
+    <h2>DC Meeting Calendar</h2>
+    <div id='calendar'></div>
+  </section>
+
+  <!-- FullCalendar JS -->
+  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+  <script>
+    // SESSION GUARD
+    if (!localStorage.getItem('loggedInUser')) {
+      window.location.href = 'login.html';
+    }
+
+    const API_URL = 'http://localhost:5001/api/students';
+    let students = [];
+    let provisionFiles = [];
+    let degreeFiles = [];
+    let synopsisFiles = [];
+    let provisionFileIndex = 0;
+    let degreeFileIndex = 0;
+    let synopsisFileIndex = 0;
+
+    // SIDEBAR FUNCTIONS
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sideDrawer');
+      const overlay = document.getElementById('drawerOverlay');
+      if (sidebar && overlay) {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+        if (sidebar.classList.contains('active')) {
+          updateSidebarProfile();
+        } else {
+          // Reset submenus when closing
+          ['Top', 'Bottom'].forEach(suffix => {
+            const submenu = document.getElementById('settingsSubmenu' + suffix);
+            const caret = document.getElementById('settingsCaret' + suffix);
+            if (submenu) submenu.style.display = 'none';
+            if (caret) caret.innerText = '▾';
+          });
+        }
+      }
+    }
+
+    function toggleSettingsSubmenu(suffix) {
+      const submenu = document.getElementById('settingsSubmenu' + suffix);
+      const caret = document.getElementById('settingsCaret' + suffix);
+      if (submenu) {
+        if (submenu.style.display === 'none') {
+          submenu.style.display = 'block';
+          if (caret) caret.innerText = '▴';
+        } else {
+          submenu.style.display = 'none';
+          if (caret) caret.innerText = '▾';
+        }
+      }
+    }
+
+    function updateSidebarProfile() {
+      const loggedInUser = localStorage.getItem('loggedInUser');
+      if (!loggedInUser) return;
+
+      const users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
+      let user = users.find(u => u.username === loggedInUser);
+
+      // Handle hardcoded admin case
+      if (loggedInUser === "lithikka") {
+        user = {
+          username: "lithikka",
+          designation: "Admin",
+          email: "admin@psgrkcw.ac.in"
+        };
+      }
+
+
+      if (user) {
+        const sideUsername = document.getElementById('side-username');
+        const sideRole = document.getElementById('side-role');
+        const sideEmail = document.getElementById('side-email');
+        const researchLink = document.getElementById('side-research-link');
+
+        if (sideUsername) sideUsername.innerText = user.username.toUpperCase();
+        if (sideRole) sideRole.innerText = user.designation;
+        if (sideEmail) sideEmail.innerText = user.email;
+
+        // Academic links visibility based on role
+        if (researchLink) {
+          if (user.designation === "Student") {
+            researchLink.style.display = "block";
+            researchLink.innerText = "My Research Workspace";
+            researchLink.onclick = () => { alert("Opening Scholar Dashboard..."); toggleSidebar(); };
+          } else if (user.designation === "Staff" || user.designation === "HOD") {
+            researchLink.style.display = "block";
+            researchLink.innerText = "Managed PhD Scholars";
+            researchLink.onclick = () => { showSection('view-records'); toggleSidebar(); };
+          } else {
+            researchLink.style.display = "none";
+          }
+        }
+      }
+    }
+
+    function updateNavigationByRole() {
+      const loggedInUser = localStorage.getItem('loggedInUser');
+      const users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
+      const user = users.find(u => u.username === loggedInUser);
+
+      const addBtn = document.getElementById('nav-btn-add');
+      const viewBtn = document.getElementById('nav-btn-view');
+      const searchBtn = document.getElementById('nav-btn-search');
+
+      if (user && user.designation === "Student") {
+        if (addBtn) {
+          addBtn.innerText = "Add Details";
+          addBtn.onclick = () => {
+            showSection('add-student');
+            const heading = document.querySelector('#add-student h2');
+            const submitBtn = document.querySelector('#add-student button[type="submit"]');
+
+            // Find existing record for this student
+            const studentRecord = students.find(s => s.email === user.email);
+            if (studentRecord) {
+              if (heading) heading.innerText = 'Edit Your PhD Details';
+              if (submitBtn) submitBtn.innerText = 'Update Details';
+              prefillStudentForm(studentRecord);
+            } else {
+              if (heading) heading.innerText = 'Add Your PhD Details';
+              if (submitBtn) submitBtn.innerText = 'Save Details';
+              // Set default email from registration
+              document.getElementById('email').value = user.email;
+            }
+          };
+        }
+        if (viewBtn) viewBtn.style.display = 'none';
+        if (searchBtn) searchBtn.style.display = 'none';
+      } else {
+        // Staff/HOD/Admin
+        if (addBtn) {
+          addBtn.innerText = "Add New Student";
+          addBtn.onclick = () => {
+            showSection('add-student');
+            const heading = document.querySelector('#add-student h2');
+            const submitBtn = document.querySelector('#add-student button[type="submit"]');
+            if (heading) heading.innerText = 'Add New PhD Student';
+            if (submitBtn) submitBtn.innerText = 'Add Student';
+            // Clear form for new entry
+            document.querySelector('#add-student form').reset();
+            document.getElementById('literatureContainer').innerHTML = `
+              <div class="literature-entry">
+                <div class="literature-inputs">
+                  <input type="text" class="lit-paperTitle" placeholder="Paper Title" maxlength="200" required>
+                  <input type="text" class="lit-journal" placeholder="Journal/Conference" maxlength="100" required>
+                </div>
+                <div class="literature-inputs" style="margin-top: 5px;">
+                  <input type="text" class="lit-publisher" placeholder="Publisher" maxlength="100" required>
+                  <input type="text" class="lit-pubYear" placeholder="Publication Year" maxlength="4" required>
+                </div>
+                <input type="text" class="lit-doi" placeholder="DOI/ISBN (Optional)" maxlength="100">
+                <button type="button" class="remove-entry-btn" onclick="removeLiteratureEntry(this)">Remove</button>
+              </div>
+            `;
+          };
+        }
+        if (viewBtn) viewBtn.style.display = 'inline-block';
+        if (searchBtn) searchBtn.style.display = 'inline-block';
+      }
+    }
+
+
+    // CALENDAR INIT
+    let calendar;
+
+    document.addEventListener('DOMContentLoaded', function () {
+      var calendarEl = document.getElementById('calendar');
+      calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,listWeek'
+        },
+        height: 600,
+        events: [
+          { title: 'Synopsis Due', start: '2026-02-22', color: '#dc3545' },
+          { title: 'Fee Payment', start: '2026-02-28', color: '#ffc107', textColor: 'black' },
+          { title: 'DC Meeting', start: '2026-03-15', color: '#007bff' },
+          { title: 'Workshop on AI', start: '2026-02-18', color: '#28a745' }
+        ]
+      });
+      calendar.render();
+    });
+
+    function showSection(id) {
+      document.querySelectorAll("section").forEach(sec => sec.classList.remove("active"));
+      const target = document.getElementById(id);
+      if (target) {
+        target.classList.add("active");
+        if (id === 'calendar-scheduler' && calendar) {
+          setTimeout(() => calendar.render(), 100); // Re-render to fix sizing issues in hidden divs
+        }
+      }
+
+      // Update Breadcrumbs
+      let sectionName = "Dashboard";
+      switch (id) {
+        case 'add-student': sectionName = "Add Student"; break;
+        case 'view-records': sectionName = "View Records"; break;
+        case 'search': sectionName = "Search"; break;
+        case 'progress-timeline': sectionName = "Progress Tracking"; break;
+        case 'notifications': sectionName = "Notifications"; break;
+        case 'ipr-policy': sectionName = "IPR Policy"; break;
+        case 'incentives-policy': sectionName = "Incentives Policy"; break;
+        case 'calendar-scheduler': sectionName = "DC Calendar"; break;
+      }
+      updateBreadcrumbs(sectionName);
+
+      if (id === "view-records") displayStudents();
+      if (id === "progress-timeline") displayProgress();
+      if (id === "dashboard") updateDashboardStats();
+
+      // Highlight Navigation Button
+      document.querySelectorAll('.nav-wrapper button').forEach(btn => btn.classList.remove('active'));
+      let activeBtnId = '';
+      switch (id) {
+        case 'add-student': activeBtnId = 'nav-btn-add'; break;
+        case 'view-records': activeBtnId = 'nav-btn-view'; break;
+        case 'search': activeBtnId = 'nav-btn-search'; break;
+        // Add other mappings if buttons have IDs
+      }
+      if (activeBtnId && document.getElementById(activeBtnId)) {
+        document.getElementById(activeBtnId).classList.add('active');
+      } else {
+        // Fallback for buttons without IDs or non-direct matches (like Dashboard which is often default)
+        const buttons = document.querySelectorAll('.nav-wrapper button');
+        for (let btn of buttons) {
+          if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(id)) {
+            btn.classList.add('active');
+            break;
+          }
+        }
+      }
+    }
+
+    function updateDashboardStats() {
+      const statTotal = document.getElementById('stat-total');
+      if (statTotal) {
+        statTotal.innerText = students.length;
+      }
+    }
+
+    // Initial load
+    async function init() {
+      await loadStudents();
+      updateDashboardStats();
+      updateNavigationByRole();
+      // Sidebar check
+      const loggedInUser = localStorage.getItem('loggedInUser');
+      const btn = document.getElementById('hamburgerBtn');
+      if (loggedInUser) {
+        if (btn) btn.style.display = 'flex';
+        updateSidebarProfile();
+      } else {
+        if (btn) btn.style.display = 'none';
+      }
+    }
+
+    // DARK MODE & BREADCRUMBS
+    function toggleTheme() {
+      const html = document.documentElement;
+      const currentTheme = html.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+    }
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    }
+
+    function updateBreadcrumbs(sectionName) {
+      const el = document.getElementById('breadcrumb-current');
+      if (el) el.innerText = sectionName;
+    }
+
+    async function loadStudents() {
+      // 1. Fetch from Backend API
+      try {
+        const response = await fetch('http://localhost:5000/api/students');
+        students = await response.json();
+      } catch (error) {
+        console.error("Error loading students:", error);
+        // Fallback to localStorage if server fails
+        console.warn("Backend Unreachable. Loading from Local Storage.");
+        students = JSON.parse(localStorage.getItem('phdStudents')) || [];
+      }
+      displayStudents();
+    }
+
+    window.addEventListener('load', init);
+
+    function toggleLiteratureSection() {
+      const literatureReview = document.getElementById('literatureReview').value;
+      const section = document.getElementById('literatureSection');
+      const isActive = literatureReview === 'yes';
+
+      section.classList.toggle('active', isActive);
+
+      // Dynamically set/remove required attribute to prevent validation issues
+      const requiredFields = section.querySelectorAll('.lit-paperTitle, .lit-journal, .lit-publisher, .lit-pubYear');
+      requiredFields.forEach(field => {
+        if (isActive) {
+          field.setAttribute('required', 'required');
+        } else {
+          field.removeAttribute('required');
+        }
+      });
+    }
+
+    function toggleSynopsisSection() {
+      const synopsisValue = document.getElementById('synopsisSubmission').value;
+      const section = document.getElementById('synopsisSection');
+
+      if (synopsisValue === 'yes') {
+        section.classList.add('active');
+      } else {
+        section.classList.remove('active');
+        // Reset files and UI when "No" is selected
+        synopsisFiles = [];
+        synopsisFileIndex = 0;
+        document.getElementById('synopsisFilesList').innerHTML = '';
+        document.getElementById('synopsisFilePreview').innerHTML = '';
+        document.querySelectorAll('.synopsis-file-extra').forEach(input => input.closest('.file-input-wrapper').remove());
+      }
+    }
+
+    // PROVISION CERTIFICATE FUNCTIONS
+    function handleProvisionFile(input) {
+      const file = input.files[0];
+      const preview = document.getElementById('provisionFilePreview');
+
+      if (file) {
+        if (file.size > 10 * 1024 * 1024) {
+          alert('File size must be less than 10MB!');
+          input.value = '';
+          preview.innerHTML = 'File too large (Max 10MB)';
+          preview.className = 'file-preview invalid';
+          return;
+        }
+
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+        if (!validTypes.includes(file.type)) {
+          alert('ONLY JPG/IMG/PNG/PDF files allowed!\n\nCurrent file: ' + file.type);
+          input.value = '';
+          preview.innerHTML = 'Invalid file type (JPG/IMG/PNG/PDF only)';
+          preview.className = 'file-preview invalid';
+          return;
+        }
+
+        const icon = file.type.startsWith('image/') ? 'Image' : 'PDF';
+        preview.innerHTML = `Valid ${icon} ${file.name}<br><small>Size: ${(file.size / 1024 / 1024).toFixed(1)}MB | Type: ${file.type}</small>`;
+        preview.className = 'file-preview valid';
+
+        provisionFiles.push({
+          id: provisionFileIndex++,
+          name: file.name,
+          size: file.size,
+          type: file.type
+        });
+        updateProvisionFilesList();
+        input.value = '';
+        preview.innerHTML = '';
+      }
+    }
+
+    function addProvisionFile() {
+      const container = document.querySelector('#provisionSection .upload-buttons-row');
+      const newWrapper = document.createElement('div');
+      newWrapper.className = 'file-input-wrapper';
+      newWrapper.style.position = 'relative'; // Ensure relative positioning for absolute button
+      newWrapper.innerHTML = `
+            <input type="file" class="provision-file-extra" 
+                   accept="image/jpeg,image/jpg,image/png,application/pdf" 
+                   onchange="handleProvisionFileExtra(this)">
+            <label class="file-input-label" onclick="this.previousElementSibling.click()">Choose JPG/IMG/PDF File</label>
+            <button type="button" class="btn-delete" style="position: absolute; top: -10px; right: -10px; padding: 2px 6px; font-size: 12px; border-radius: 50%;" onclick="this.parentElement.remove()">X</button>
+            <div class="file-preview"></div>
+          `;
+      // Insert before the "Add Another" button (which is the last child of upload-buttons-row)
+      container.insertBefore(newWrapper, container.lastElementChild);
+    }
+
+    function handleProvisionFileExtra(input) {
+      const file = input.files[0];
+      const preview = input.parentElement.querySelector('.file-preview');
+
+      if (file) {
+        if (file.size > 10 * 1024 * 1024) {
+          alert('File size must be less than 10MB!');
+          input.value = '';
+          preview.innerHTML = 'File too large (Max 10MB)';
+          preview.className = 'file-preview invalid';
+          return;
+        }
+
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+        if (!validTypes.includes(file.type)) {
+          alert('ONLY JPG/IMG/PNG/PDF files allowed!\n\nCurrent file: ' + file.type);
+          input.value = '';
+          preview.innerHTML = 'Invalid file type (JPG/IMG/PNG/PDF only)';
+          preview.className = 'file-preview invalid';
+          return;
+        }
+
+        const icon = file.type.startsWith('image/') ? 'Image' : 'PDF';
+        preview.innerHTML = `Valid ${icon} ${file.name}<br><small>Size: ${(file.size / 1024 / 1024).toFixed(1)}MB</small>`;
+        preview.className = 'file-preview valid';
+
+        provisionFiles.push({
+          id: provisionFileIndex++,
+          name: file.name,
+          size: file.size,
+          type: file.type
+        });
+        updateProvisionFilesList();
+        input.parentElement.remove();
+      }
+    }
+
+    function removeProvisionFile(id) {
+      provisionFiles = provisionFiles.filter(file => file.id !== id);
+      updateProvisionFilesList();
+    }
+
+    function updateProvisionFilesList() {
+      const list = document.getElementById('provisionFilesList');
+      list.innerHTML = '';
+      provisionFiles.forEach(file => {
+        const entry = document.createElement('div');
+        entry.className = 'file-entry';
+        entry.innerHTML = `
+        <span style="flex: 1; font-size: 13px;">${file.name} (${(file.size / 1024 / 1024).toFixed(1)}MB)</span>
+        <button type="button" class="btn-delete" onclick="removeProvisionFile(${file.id})">Remove</button>
+      `;
+        list.appendChild(entry);
+      });
+    }
+
+    // DEGREE CERTIFICATE FUNCTIONS
+    function handleDegreeFile(input) {
+      const file = input.files[0];
+      const preview = document.getElementById('degreeFilePreview');
+
+      if (file) {
+        if (file.size > 10 * 1024 * 1024) {
+          alert('File size must be less than 10MB!');
+          input.value = '';
+          preview.innerHTML = 'File too large (Max 10MB)';
+          preview.className = 'file-preview invalid';
+          return;
+        }
+
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+        if (!validTypes.includes(file.type)) {
+          alert('ONLY JPG/IMG/PNG/PDF files allowed!\n\nCurrent file: ' + file.type);
+          input.value = '';
+          preview.innerHTML = 'Invalid file type (JPG/IMG/PNG/PDF only)';
+          preview.className = 'file-preview invalid';
+          return;
+        }
+
+        const icon = file.type.startsWith('image/') ? 'Image' : 'PDF';
+        preview.innerHTML = `Valid ${icon} ${file.name}<br><small>Size: ${(file.size / 1024 / 1024).toFixed(1)}MB | Type: ${file.type}</small>`;
+        preview.className = 'file-preview valid';
+
+        degreeFiles.push({
+          id: degreeFileIndex++,
+          name: file.name,
+          size: file.size,
+          type: file.type
+        });
+        updateDegreeFilesList();
+        input.value = '';
+        preview.innerHTML = '';
+      }
+    }
+
+    function addDegreeFile() {
+      const container = document.querySelector('#degreeSection .upload-buttons-row');
+      const newWrapper = document.createElement('div');
+      newWrapper.className = 'file-input-wrapper';
+      newWrapper.style.position = 'relative';
+      newWrapper.innerHTML = `
+            <input type="file" class="degree-file-extra" 
+                   accept="image/jpeg,image/jpg,image/png,application/pdf" 
+                   onchange="handleDegreeFileExtra(this)">
+            <label class="file-input-label" onclick="this.previousElementSibling.click()">Choose JPG/IMG/PDF File</label>
+            <button type="button" class="btn-delete" style="position: absolute; top: -10px; right: -10px; padding: 2px 6px; font-size: 12px; border-radius: 50%;" onclick="this.parentElement.remove()">X</button>
+            <div class="file-preview"></div>
+          `;
+      container.insertBefore(newWrapper, container.lastElementChild);
+    }
+
+    function handleDegreeFileExtra(input) {
+      const file = input.files[0];
+      const preview = input.parentElement.querySelector('.file-preview');
+
+      if (file) {
+        if (file.size > 10 * 1024 * 1024) {
+          alert('File size must be less than 10MB!');
+          input.value = '';
+          preview.innerHTML = 'File too large (Max 10MB)';
+          preview.className = 'file-preview invalid';
+          return;
+        }
+
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+        if (!validTypes.includes(file.type)) {
+          alert('ONLY JPG/IMG/PNG/PDF files allowed!\n\nCurrent file: ' + file.type);
+          input.value = '';
+          preview.innerHTML = 'Invalid file type (JPG/IMG/PNG/PDF only)';
+          preview.className = 'file-preview invalid';
+          return;
+        }
+
+        const icon = file.type.startsWith('image/') ? 'Image' : 'PDF';
+        preview.innerHTML = `Valid ${icon} ${file.name}<br><small>Size: ${(file.size / 1024 / 1024).toFixed(1)}MB</small>`;
+        preview.className = 'file-preview valid';
+
+        degreeFiles.push({
+          id: degreeFileIndex++,
+          name: file.name,
+          size: file.size,
+          type: file.type
+        });
+        updateDegreeFilesList();
+        input.parentElement.remove();
+      }
+    }
+
+    function removeDegreeFile(id) {
+      degreeFiles = degreeFiles.filter(file => file.id !== id);
+      updateDegreeFilesList();
+    }
+
+    function updateDegreeFilesList() {
+      const list = document.getElementById('degreeFilesList');
+      list.innerHTML = '';
+      degreeFiles.forEach(file => {
+        const entry = document.createElement('div');
+        entry.className = 'file-entry';
+        entry.innerHTML = `
+        <span style="flex: 1; font-size: 13px;">${file.name} (${(file.size / 1024 / 1024).toFixed(1)}MB)</span>
+        <button type="button" class="btn-delete" onclick="removeDegreeFile(${file.id})">Remove</button>
+      `;
+        list.appendChild(entry);
+      });
+    }
+
+    // SYNOPSIS FILE FUNCTIONS
+    function handleSynopsisFile(input) {
+      const file = input.files[0];
+      const preview = document.getElementById('synopsisFilePreview');
+
+      if (file) {
+        if (file.size > 10 * 1024 * 1024) {
+          alert('File size must be less than 10MB!');
+          input.value = '';
+          preview.innerHTML = 'File too large (Max 10MB)';
+          preview.className = 'file-preview invalid';
+          return;
+        }
+
+        if (file.type !== 'application/pdf') {
+          alert('ONLY PDF files allowed for Synopsis!');
+          input.value = '';
+          preview.innerHTML = 'Invalid file type (PDF only)';
+          preview.className = 'file-preview invalid';
+          return;
+        }
+
+        preview.innerHTML = `Valid PDF ${file.name}<br><small>Size: ${(file.size / 1024 / 1024).toFixed(1)}MB</small>`;
+        preview.className = 'file-preview valid';
+
+        synopsisFiles.push({
+          id: synopsisFileIndex++,
+          name: file.name,
+          size: file.size,
+          type: file.type
+        });
+        updateSynopsisFilesList();
+        input.value = '';
+        preview.innerHTML = '';
+      }
+    }
+
+    function addSynopsisFile() {
+      const container = document.querySelector('#synopsisSection .upload-buttons-row');
+      const newWrapper = document.createElement('div');
+      newWrapper.className = 'file-input-wrapper';
+      newWrapper.style.position = 'relative';
+      newWrapper.innerHTML = `
+            <input type="file" class="synopsis-file-extra" 
+                   accept="application/pdf" 
+                   onchange="handleSynopsisFileExtra(this)">
+            <label class="file-input-label" onclick="this.previousElementSibling.click()">Choose PDF File</label>
+            <button type="button" class="btn-delete" style="position: absolute; top: -10px; right: -10px; padding: 2px 6px; font-size: 12px; border-radius: 50%;" onclick="this.parentElement.remove()">X</button>
+            <div class="file-preview"></div>
+          `;
+      container.insertBefore(newWrapper, container.lastElementChild);
+    }
+
+    function handleSynopsisFileExtra(input) {
+      const file = input.files[0];
+      const preview = input.parentElement.querySelector('.file-preview');
+
+      if (file) {
+        if (file.size > 10 * 1024 * 1024) {
+          alert('File size must be less than 10MB!');
+          input.value = '';
+          preview.innerHTML = 'File too large (Max 10MB)';
+          preview.className = 'file-preview invalid';
+          return;
+        }
+
+        if (file.type !== 'application/pdf') {
+          alert('ONLY PDF files allowed for Synopsis!');
+          input.value = '';
+          preview.innerHTML = 'Invalid file type (PDF only)';
+          preview.className = 'file-preview invalid';
+          return;
+        }
+
+        preview.innerHTML = `Valid PDF ${file.name}<br><small>Size: ${(file.size / 1024 / 1024).toFixed(1)}MB</small>`;
+        preview.className = 'file-preview valid';
+
+        synopsisFiles.push({
+          id: synopsisFileIndex++,
+          name: file.name,
+          size: file.size,
+          type: file.type
+        });
+        updateSynopsisFilesList();
+        input.parentElement.remove();
+      }
+    }
+
+    function removeSynopsisFile(id) {
+      synopsisFiles = synopsisFiles.filter(file => file.id !== id);
+      updateSynopsisFilesList();
+    }
+
+    function updateSynopsisFilesList() {
+      const list = document.getElementById('synopsisFilesList');
+      list.innerHTML = '';
+      synopsisFiles.forEach(file => {
+        const entry = document.createElement('div');
+        entry.className = 'file-entry';
+        entry.innerHTML = `
+        <span style="flex: 1; font-size: 13px;">${file.name} (${(file.size / 1024 / 1024).toFixed(1)}MB)</span>
+        <button type="button" class="btn-delete" onclick="removeSynopsisFile(${file.id})">Remove</button>
+      `;
+        list.appendChild(entry);
+      });
+    }
+
+    function displayNotifications() {
+      const list = document.getElementById('notificationList');
+      list.innerHTML = '';
+
+      // Get students for notifications
+      const students = JSON.parse(localStorage.getItem('phdStudents')) || [];
+      const alerts = [];
+
+      // Generate alerts based on student progress
+      students.forEach(student => {
+        // Determine stage if not set
+        let stage = student.progressStage || 'Coursework Completion';
+
+        // Logic for alerts based on new stages
+        if (stage === 'Coursework Completion') {
+          alerts.push({
+            type: 'info',
+            title: `Coursework Update: ${student.name}`,
+            msg: `Scholar ${student.name} is in Coursework phase. Check for completion soon.`
+          });
+        } else if (stage === 'Topic Identification & Title Confirmation') {
+          alerts.push({
+            type: 'urgent',
+            title: `Topic Confirmation Needed`,
+            msg: `Verify and confirm the research topic for ${student.name}.`
+          });
+        } else if (stage === 'Doctoral Committee (DC) Meetings') {
+          alerts.push({
+            type: 'urgent',
+            title: `Upcoming DC Meeting`,
+            msg: `Schedule a Doctoral Committee meeting for ${student.name}.`
+          });
+        } else if (stage === 'Synopsis Submission') {
+          alerts.push({
+            type: 'info',
+            title: `Synopsis Reminder`,
+            msg: `${student.name} is ready for Synopsis submission. Check documents.`
+          });
+        } else if (stage === 'Thesis Writing & Submission') {
+          alerts.push({
+            type: 'urgent',
+            title: `Thesis Submission Due`,
+            msg: `Thesis submission is pending for ${student.name}.`
+          });
+        } else if (stage === 'Viva Voce Examination') {
+          alerts.push({
+            type: 'urgent',
+            title: `Viva Voce Scheduled`,
+            msg: `Prepare for the public defense for ${student.name}.`
+          });
+        } else if (stage === 'Degree Certificate Issued') {
+          alerts.push({
+            type: 'success',
+            title: `PhD Degree Awarded`,
+            msg: `Congratulations! ${student.name} has been awarded the PhD degree.`
+          });
+        }
+      });
+
+      if (alerts.length === 0) {
+        list.innerHTML = '<p>No new notifications.</p>';
+        return;
+      }
+
+      // Render alerts
+      alerts.forEach(alert => {
+        const div = document.createElement('div');
+        div.className = `notification-card ${alert.type}`;
+        div.innerHTML = `
+                    <div class="notification-content">
+                        <h4>${alert.title}</h4>
+                        <p>${alert.msg}</p>
+                    </div>
+                    <div class="notification-time">Just now</div>
+                `;
+        list.appendChild(div);
+      });
+    }
+
+
+
+    function removeLiteratureEntry(button) {
+      const entry = button.closest('.literature-entry');
+      if (document.querySelectorAll('.literature-entry').length > 1) {
+        entry.remove();
+      }
+    }
+
+    function addLiteratureEntry() {
+      const container = document.getElementById('literatureContainer');
+      const section = document.getElementById('literatureSection');
+      const isActive = section.classList.contains('active');
+
+      const newEntry = document.createElement('div');
+      newEntry.className = 'literature-entry';
+      newEntry.innerHTML = `
+      <div class="literature-inputs">
+        <input type="text" class="lit-paperTitle" placeholder="Paper Title" ${isActive ? 'required' : ''}>
+        <input type="text" class="lit-journal" placeholder="Journal/Conference" ${isActive ? 'required' : ''}>
+      </div>
+      <div class="literature-inputs">
+        <input type="text" class="lit-publisher" placeholder="Publisher" ${isActive ? 'required' : ''}>
+        <input type="text" class="lit-pubYear" placeholder="Year" ${isActive ? 'required' : ''}>
+      </div>
+      <button type="button" class="remove-entry-btn" onclick="removeLiteratureEntry(this)">Remove</button>
+    `;
+      container.appendChild(newEntry);
+    }
+
+    async function addStudent(e) {
+      e.preventDefault();
+      console.log("Add Student Initiated");
+
+      try {
+        // Capture Literature Papers
+        const literaturePapers = [];
+        if (document.getElementById('literatureReview') && document.getElementById('literatureReview').value === 'yes') {
+          document.querySelectorAll('.literature-entry').forEach(entry => {
+            const title = entry.querySelector('.lit-paperTitle').value;
+            if (title) {
+              literaturePapers.push({
+                title: title,
+                journal: entry.querySelector('.lit-journal').value,
+                publisher: entry.querySelector('.lit-publisher').value,
+                year: entry.querySelector('.lit-pubYear').value,
+                doi: entry.querySelector('.lit-doi') ? entry.querySelector('.lit-doi').value : ''
+              });
+            }
+          });
+        }
+
+        const emailInput = document.getElementById('email');
+        if (!emailInput) throw new Error("Email input not found");
+        const email = emailInput.value;
+
+        // Ensure students array exists
+        if (!Array.isArray(students)) {
+          students = [];
+        }
+
+        const existingIndex = students.findIndex(s => s.email === email);
+
+        const studentData = {
+          name: document.getElementById('name').value,
+          email: email,
+          phone: document.getElementById('phone').value,
+          university: document.getElementById('university').value,
+          department: document.getElementById('department').value,
+          usertype: document.getElementById('usertype').value || 'Full-Time',
+          topic: document.getElementById('topic').value,
+          year: parseInt(document.getElementById('year').value) || new Date().getFullYear(),
+          status: document.getElementById('status').value,
+          provisionFiles: provisionFiles || [],
+          degreeFiles: degreeFiles || [],
+          synopsisFiles: synopsisFiles || [],
+          literaturePapers: literaturePapers
+        };
+
+        // Generate a temporary ID if it's a new local record
+        if (!studentData._id && existingIndex === -1) {
+          studentData._id = 'local_' + Date.now();
+        }
+
+        // 1. Local Storage fallback
+        if (existingIndex >= 0) {
+          const id = students[existingIndex]._id;
+          students[existingIndex] = { ...students[existingIndex], ...studentData, _id: id };
+        } else {
+          students.push(studentData);
+        }
+
+        try {
+          localStorage.setItem('phdStudents', JSON.stringify(students));
+        } catch (storageError) {
+          console.error(storageError);
+          alert("Warning: Local Storage full! Data might not persist.");
+        }
+
+        // 2. Backend Sync
+        const url = existingIndex >= 0 && students[existingIndex]._id && !students[existingIndex]._id.startsWith('local_')
+          ? `${API_URL}/${students[existingIndex]._id}`
+          : `${API_URL}/add`;
+
+        const method = existingIndex >= 0 && students[existingIndex]._id && !students[existingIndex]._id.startsWith('local_')
+          ? 'PUT'
+          : 'POST';
+
+        try {
+          const response = await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(studentData)
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            if (method === 'POST' && result._id) {
+              if (existingIndex >= 0) {
+                students[existingIndex]._id = result._id;
+              } else {
+                students[students.length - 1]._id = result._id;
+              }
+              localStorage.setItem('phdStudents', JSON.stringify(students));
+            }
+            alert('Saved successfully!');
+          } else {
+            throw new Error('Backend failed');
+          }
+        } catch (error) {
+          console.warn('Network/Backend error, saved locally');
+          // Suppress redundant alerts, just notify successful local save
+          alert('Saved successfully (Local Mode)');
+        }
+
+        // 3. UI Update without Reload
+        document.querySelector('#add-student form').reset();
+
+        // Reset Global File Arrays
+        provisionFiles = [];
+        degreeFiles = [];
+        synopsisFiles = [];
+        provisionFileIndex = 0;
+        degreeFileIndex = 0;
+        synopsisFileIndex = 0;
+
+        if (document.getElementById('provisionFilesList')) document.getElementById('provisionFilesList').innerHTML = '';
+        if (document.getElementById('degreeFilesList')) document.getElementById('degreeFilesList').innerHTML = '';
+        if (document.getElementById('synopsisFilesList')) document.getElementById('synopsisFilesList').innerHTML = '';
+        if (document.getElementById('provisionFilePreview')) document.getElementById('provisionFilePreview').innerHTML = '';
+        if (document.getElementById('degreeFilePreview')) document.getElementById('degreeFilePreview').innerHTML = '';
+        if (document.getElementById('synopsisFilePreview')) document.getElementById('synopsisFilePreview').innerHTML = '';
+
+        // Reset dynamic sections
+        if (document.getElementById('literatureReview')) {
+          document.getElementById('literatureReview').value = '';
+          toggleLiteratureSection();
+        }
+        if (document.getElementById('synopsisSubmission')) {
+          document.getElementById('synopsisSubmission').value = '';
+          toggleSynopsisSection();
+        }
+
+        // Go back to view
+        showSection('view-records');
+
+      } catch (e) {
+        console.error("Add Student Critical Error:", e);
+        alert("Error saving student: " + e.message);
+      }
+    }
+
+
+    function prefillStudentForm(s) {
+      if (!s) return;
+      document.getElementById('name').value = s.name || '';
+      document.getElementById('email').value = s.email || '';
+      document.getElementById('phone').value = s.phone || '';
+      document.getElementById('university').value = s.university || '';
+      document.getElementById('department').value = s.department || '';
+      document.getElementById('usertype').value = s.usertype || '';
+      document.getElementById('topic').value = s.topic || '';
+      document.getElementById('year').value = s.year || '';
+      document.getElementById('status').value = s.status || '';
+
+      if (s.literaturePapers && s.literaturePapers.length > 0) {
+        document.getElementById('literatureReview').value = 'yes';
+        toggleLiteratureSection();
+        const container = document.getElementById('literatureContainer');
+        container.innerHTML = '';
+        s.literaturePapers.forEach(paper => {
+          const entry = document.createElement('div');
+          entry.className = 'literature-entry';
+          entry.innerHTML = `
+            <div class="literature-inputs">
+              <input type="text" class="lit-paperTitle" placeholder="Paper Title" value="${paper.title}" required>
+              <input type="text" class="lit-journal" placeholder="Journal/Conference" value="${paper.journal}" required>
+            </div>
+            <div class="literature-inputs" style="margin-top: 5px;">
+              <input type="text" class="lit-publisher" placeholder="Publisher" value="${paper.publisher}" required>
+              <input type="text" class="lit-pubYear" placeholder="Publication Year" value="${paper.year}" required>
+            </div>
+            <input type="text" class="lit-doi" placeholder="DOI/ISBN (Optional)" value="${paper.doi}">
+            <button type="button" class="remove-entry-btn" onclick="removeLiteratureEntry(this)">Remove</button>
+          `;
+          container.appendChild(entry);
+        });
+      }
+    }
+
+    function displayStudents() {
+      const tbody = document.querySelector("#studentTable tbody");
+      tbody.innerHTML = "";
+      students.forEach((s) => {
+        const provisionCount = s.provisionFiles ? s.provisionFiles.length : 0;
+        const degreeCount = s.degreeFiles ? s.degreeFiles.length : 0;
+        const synopsisCount = s.synopsisFiles ? s.synopsisFiles.length : 0;
+        const litCount = s.literaturePapers ? s.literaturePapers.length : 0;
+        tbody.innerHTML += `
+        <tr>
+          <td>${s.name}</td>
+          <td>${s.email}</td>
+          <td>${s.phone}</td>
+          <td>${s.topic.substring(0, 30)}${s.topic.length > 30 ? '...' : ''}</td>
+          <td>${s.status}</td>
+          <td>${litCount} Papers</td>
+          <td>${synopsisCount}</td>
+          <td>${provisionCount}</td>
+          <td>${degreeCount}</td>
+          <td><button class="btn-delete" onclick="deleteStudent('${s.email}')">Delete</button></td>
+        </tr>`;
+      });
+    }
+
+    async function deleteStudent(email) {
+      if (confirm('Delete this student record?')) {
+        // 1. Delete from localStorage first
+        const studentIndex = students.findIndex(s => s.email === email);
+        if (studentIndex === -1) {
+          alert('Student not found');
+          return;
+        }
+
+        const student = students[studentIndex];
+        students.splice(studentIndex, 1);
+        localStorage.setItem('phdStudents', JSON.stringify(students));
+
+        // 2. Try to delete from backend if student has _id
+        if (student._id) {
+          try {
+            const response = await fetch(`${API_URL}/${student._id}`, { method: 'DELETE' });
+            if (response.ok) {
+              console.log('Deleted from backend successfully');
+            } else {
+              console.warn('Backend deletion failed, but local copy removed');
+            }
+          } catch (error) {
+            console.warn('Network error during backend deletion, but local copy removed:', error);
+          }
+        }
+
+        // 3. Refresh the display
+        displayStudents();
+        updateDashboardStats();
+        alert('Record deleted successfully');
+      }
+    }
+
+    function clearSearch() {
+      document.getElementById('searchInput').value = '';
+      searchStudent();
+    }
+
+    function searchStudent() {
+      let q = document.getElementById('searchInput').value.toLowerCase();
+      let tbody = document.querySelector("#searchResults tbody");
+      tbody.innerHTML = "";
+
+      if (!q) return;
+
+      students.filter(s =>
+        s.name.toLowerCase().includes(q) || s.topic.toLowerCase().includes(q)
+      ).forEach(s => {
+        const provisionCount = s.provisionFiles ? s.provisionFiles.length : 0;
+        const degreeCount = s.degreeFiles ? s.degreeFiles.length : 0;
+        const synopsisCount = s.synopsisFiles ? s.synopsisFiles.length : 0;
+        const litCount = s.literaturePapers ? s.literaturePapers.length : 0;
+        tbody.innerHTML += `
+        <tr>
+          <td>${s.name}</td>
+          <td>${s.email}</td>
+          <td>${s.phone || '-'}</td>
+          <td>${s.topic}</td>
+          <td>${s.university || '-'}</td>
+          <td>${s.department || '-'}</td>
+          <td>${s.year || '-'}</td>
+          <td>${s.status || '-'}</td>
+          <td>${synopsisCount}</td>
+          <td>${litCount} Papers</td>
+          <td>${provisionCount}</td>
+          <td>${degreeCount}</td>
+        </tr>`;
+      });
+    }
+
+
+    function displayProgress() {
+      const container = document.getElementById("progress-container");
+      container.innerHTML = "";
+
+      const stages = [
+        "Coursework Completion",
+        "Topic Identification & Title Confirmation",
+        "Literature Review Completion",
+        "Doctoral Committee (DC) Meetings",
+        "Research Work / Data Collection",
+        "Publications",
+        "Synopsis Submission",
+        "Thesis Writing & Submission",
+        "Viva Voce Examination",
+        "Provisional Certificate Issued",
+        "Degree Certificate Issued"
+      ];
+
+      if (students.length === 0) {
+        container.innerHTML = "<p>No students found.</p>";
+        return;
+      }
+
+      students.forEach((s, idx) => {
+        // Auto-detect stage
+        if (s.degreeFiles && s.degreeFiles.length > 0) {
+          s.progressStage = "Degree Certificate Issued";
+        } else if (s.provisionFiles && s.provisionFiles.length > 0) {
+          // If provision uploaded but no degree, set to Provisional Stage
+          // But only if current stage isn't already higher
+          let currentIdx = stages.indexOf(s.progressStage || "Coursework Completion");
+          let provisionIdx = stages.indexOf("Provisional Certificate Issued");
+          if (currentIdx < provisionIdx) {
+            s.progressStage = "Provisional Certificate Issued";
+          }
+        }
+
+        // Ensure default
+        if (!s.progressStage || stages.indexOf(s.progressStage) === -1) {
+          s.progressStage = "Coursework Completion";
+        }
+
+        let currentStageIndex = stages.indexOf(s.progressStage);
+        let percentage = Math.round(((currentStageIndex + 1) / stages.length) * 100);
+
+        // Build Checklist HTML
+        let checklistHtml = '<div class="stages-checklist">';
+        stages.forEach((stage, stepIdx) => {
+          let iconClass = "pending";
+          let iconContent = "";
+          let itemClass = "";
+
+          if (stepIdx < currentStageIndex) {
+            iconClass = "completed";
+            iconContent = "✓";
+            itemClass = "completed";
+          } else if (stepIdx === currentStageIndex) {
+            iconClass = "active";
+            iconContent = "●";
+            itemClass = "active";
+          }
+
+          checklistHtml += `
+                        <div class="stage-item ${itemClass}">
+                            <span class="status-icon ${iconClass}">${iconContent}</span>
+                            <span>${stage}</span>
+                        </div>
+                    `;
+        });
+        checklistHtml += '</div>';
+
+        // Dropdown for manual update
+        let optionsHtml = stages.map(stage =>
+          `<option value="${stage}" ${s.progressStage === stage ? 'selected' : ''}>${stage}</option>`
+        ).join('');
+
+        container.innerHTML += `
+                <div class="progress-card">
+                    <div class="progress-header">
+                        <h3>${s.name}</h3>
+                        <span class="percentage-badge">${percentage}% Completed</span>
+                    </div>
+                    <p><strong>Topic:</strong> ${s.topic}</p>
+                    <p><strong>Email:</strong> ${s.email}</p>
+                    
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" style="width: ${percentage}%"></div>
+                    </div>
+
+                    ${checklistHtml}
+                    
+                    <div class="progress-update-area" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
+                        <label><strong>Update Milestone:</strong></label>
+                        <select onchange="updateStudentProgress('${s.email}', this.value)">
+                            ${optionsHtml}
+                        </select>
+                    </div>
+                </div>`;
+      });
+    }
+
+    async function updateStudentProgress(email, value) {
+      // 1. Update localStorage first
+      const studentIndex = students.findIndex(s => s.email === email);
+      if (studentIndex === -1) {
+        alert('Student not found');
+        return;
+      }
+
+      const student = students[studentIndex];
+      student.progressStage = value;
+      localStorage.setItem('phdStudents', JSON.stringify(students));
+
+      // 2. Try to update backend if student has _id
+      if (student._id) {
+        try {
+          const response = await fetch(`${API_URL}/${student._id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ progressStage: value })
+          });
+
+          if (response.ok) {
+            console.log('Progress updated in backend successfully');
+          } else {
+            console.warn('Backend update failed, but local copy updated');
+          }
+        } catch (error) {
+          console.warn('Network error during backend update, but local copy updated:', error);
+        }
+      }
+
+      // 3. Refresh the display
+      displayProgress();
+      alert('Progress updated successfully');
+    }
+
+    // Initialize
+    if (document.getElementById('view-records').classList.contains('active')) {
+      displayStudents();
+    }
+  </script>
+
+</body>
+
+</html>
