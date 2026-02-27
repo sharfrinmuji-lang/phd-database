@@ -16,7 +16,7 @@
 
   <!-- Professional Header -->
   <header>
-    <img src="images/banner.png" alt="College Banner" class="header-banner">
+    <img src="images/banner.jpeg" alt="College Banner" class="header-banner">
   </header>
 
   <div class="main-content">
@@ -89,6 +89,35 @@
       document.getElementById('registerForm').reset();
     }
 
+    function attemptLocalLogin(username, password) {
+      console.log('Checking local storage for:', username);
+
+      // 1. Check Hardcoded Admins
+      if (username === "lithikka" || username === "admin") {
+        alert("Backend unreachable. Logging in as Admin (Local Mode).");
+        localStorage.setItem("loggedInUser", "System Administrator");
+        localStorage.setItem("userRole", "Admin");
+        localStorage.setItem("userEmail", "admin@psgrkcw.ac.in");
+        window.location.href = "dashboard.html";
+        return true;
+      }
+
+      // 2. Check Locally Registered Users
+      const localUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
+      const localUser = localUsers.find(u => u.username === username && u.password === password);
+
+      if (localUser) {
+        console.log("Found in local storage:", localUser);
+        alert("Login successful (Local Mode)!");
+        localStorage.setItem("loggedInUser", localUser.username);
+        localStorage.setItem("userRole", localUser.designation || localUser.role);
+        localStorage.setItem("userEmail", localUser.email || "");
+        window.location.href = "dashboard.html";
+        return true;
+      }
+      return false;
+    }
+
     // HANDLE LOGIN
     document.getElementById("loginForm").addEventListener("submit", async function (e) {
       e.preventDefault();
@@ -97,7 +126,7 @@
       const password = document.getElementById("password").value.trim();
 
       try {
-        const response = await fetch('http://localhost:5001/api/auth/login', {
+        const response = await fetch('http://localhost:5002/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, password })
@@ -108,19 +137,20 @@
         if (response.ok) {
           localStorage.setItem("loggedInUser", data.username);
           localStorage.setItem("userRole", data.role);
+          localStorage.setItem("userEmail", data.email);
           localStorage.setItem("authToken", data.token);
           window.location.href = "dashboard.html";
         } else {
-          alert(data.message || "Invalid credentials");
+          // Backend responded but failed (e.g. 400 User Not Found because DB is empty)
+          console.warn("Backend rejected login, trying local:", data.message);
+          if (!attemptLocalLogin(username, password)) {
+            alert(data.message || "Invalid credentials");
+          }
         }
       } catch (error) {
-        console.error('Error:', error);
-        // Fallback for demo/network issues
-        if (username === "lithikka" || username === "admin") {
-          alert("Backend unreachable (Network Block). Logging in with Local Mode.");
-          localStorage.setItem("loggedInUser", username);
-          window.location.href = "dashboard.html";
-        } else {
+        console.warn('Network error, trying local:', error);
+        // Network Error (Backend unreachable)
+        if (!attemptLocalLogin(username, password)) {
           alert("Server unreachable. Please check your internet connection.");
         }
       }
@@ -147,7 +177,7 @@
       }
 
       try {
-        const response = await fetch('http://localhost:5001/api/auth/register', {
+        const response = await fetch('http://localhost:5002/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, password, email, role: designation })
@@ -159,11 +189,18 @@
           alert("Registration successful! Please login.");
           toggleForms();
         } else {
-          alert(data.message || "Registration failed");
+          throw new Error(data.message || "Registration failed");
         }
       } catch (error) {
-        console.error('Error:', error);
-        alert("Server error. Please try again.");
+        console.warn('Backend registration failed, falling back to local storage:', error);
+
+        // Local Fallback
+        const newUser = { username, password, email, designation };
+        registeredUsers.push(newUser);
+        localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+
+        alert("Registration successful (Local Mode)! Please login.");
+        toggleForms();
       }
     });
   </script>

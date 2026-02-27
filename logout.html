@@ -59,7 +59,7 @@
 
   <!-- Professional Header -->
   <header>
-    <img src="images/banner.png" alt="College Banner" class="header-banner">
+    <img src="images/Banner1.jpg" alt="College Banner" class="header-banner">
   </header>
 
   <div class="main-content">
@@ -78,6 +78,7 @@
     function logout() {
       localStorage.removeItem("loggedInUser");
       localStorage.removeItem("userRole");
+      localStorage.removeItem("userEmail");
       localStorage.removeItem("authToken");
       window.location.href = "login.html";
     }

@@ -41,22 +41,21 @@ body {
 /* Professional Header */
 header {
     background-color: white;
-    /* Changed to white or transparent for banner */
     padding: 0;
     display: flex;
     justify-content: center;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    z-index: 10;
-    position: relative;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    position: sticky;
+    top: 0;
     width: 100%;
 }
 
 .header-banner {
+    height: 210px;
     width: 100%;
-    height: auto;
-    object-fit: cover;
-    max-height: 150px;
-    /* Optional: limit height so it doesn't take too much space */
+    object-fit: fill;
+    display: block;
 }
 
 /* Main Content Area */
