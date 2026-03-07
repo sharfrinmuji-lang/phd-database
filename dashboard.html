@@ -1029,10 +1029,64 @@
         box-shadow: 0 0 0 0 rgba(230, 20, 184, 0);
       }
     }
+
+    /* Toast Notification Styles */
+    #toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+    }
+
+    .toast {
+      background: var(--card-bg);
+      color: var(--text-color);
+      padding: 15px 25px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 300px;
+      transform: translateX(120%);
+      transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      border-left: 5px solid var(--primary-color);
+    }
+
+    .toast.show {
+      transform: translateX(0);
+    }
+
+    .toast.success {
+      border-left-color: #28a745;
+    }
+
+    .toast.error {
+      border-left-color: #dc3545;
+    }
+
+    .toast.info {
+      border-left-color: #007bff;
+    }
+
+    .toast.warning {
+      border-left-color: #ffc107;
+    }
+
+    .toast i {
+      font-size: 20px;
+    }
+
+    .toast-message {
+      font-size: 14px;
+      font-weight: 500;
+    }
   </style>
 </head>
 
 <body>
+  <div id="toast-container"></div>
   <div class="background-watermark"></div>
   <header style="position: relative;">
     <div class="hamburger-menu" id="hamburgerBtn" onclick="toggleSidebar()">☰</div>
@@ -1141,18 +1195,20 @@
     <div id="recent-status-section"
       style="margin-top: 25px; background: var(--card-bg); padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: none;">
       <h3 style="color: var(--primary-color); margin-bottom: 20px; font-size: 20px;">Scholar Research Status</h3>
-      <table style="width: 100%; border-collapse: collapse;">
-        <thead>
-          <tr style="text-align: left; border-bottom: 2px solid var(--border-color);">
-            <th style="padding: 10px;">Scholar Name</th>
-            <th style="padding: 10px;">Research Topic</th>
-            <th style="padding: 10px;">Current Status</th>
-          </tr>
-        </thead>
-        <tbody id="recent-status-body">
-          <!-- Will be populated by JS -->
-        </tbody>
-      </table>
+      <div style="max-height: 400px; overflow-y: auto; border-radius: 8px;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="text-align: left; border-bottom: 2px solid var(--border-color);">
+              <th style="padding: 10px;">Scholar Name</th>
+              <th style="padding: 10px;">Research Topic</th>
+              <th style="padding: 10px;">Current Status</th>
+            </tr>
+          </thead>
+          <tbody id="recent-status-body">
+            <!-- Will be populated by JS -->
+          </tbody>
+        </table>
+      </div>
     </div>
   </section>
 
@@ -1737,7 +1793,7 @@
 
         <div class="portal-link-section">
           <p>For application forms and claim processes, consult your respective Head of the Department.</p>
-          <button onclick="alert('Simulation: Generating PSGRKCW Incentive Claim Form (PDF)...');" class="portal-btn"
+          <button onclick="showToast('Generating Incentive Claim Form...', 'info');" class="portal-btn"
             style="background:#4b14e6; cursor: pointer; border: none; font-family: inherit;">
             <i class="fas fa-download"></i> Download Claim Form
           </button>
@@ -1762,6 +1818,34 @@
 
     const API_URL = '/api/students';
     let students = [];
+
+    // PREMIUM TOAST SYSTEM
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+
+      let icon = 'info-circle';
+      if (type === 'success') icon = 'check-circle';
+      if (type === 'error') icon = 'exclamation-circle';
+      if (type === 'warning') icon = 'exclamation-triangle';
+
+      toast.innerHTML = `
+        <i class="fas fa-${icon}"></i>
+        <div class="toast-message">${message}</div>
+      `;
+
+      container.appendChild(toast);
+
+      // Trigger animation
+      setTimeout(() => toast.classList.add('show'), 10);
+
+      // Remove after 4 seconds
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
     let provisionFiles = [];
     let degreeFiles = [];
     let synopsisFiles = [];
@@ -2030,13 +2114,16 @@
           recentStatusSection.style.display = "block";
           const tbody = document.getElementById('recent-status-body');
           if (tbody) {
-            tbody.innerHTML = students.slice(0, 5).map(s => `
+            tbody.innerHTML = students.map(s => {
+              const topic = s.topic || s.researchTopic || 'No Topic Provided';
+              const status = s.status || 'Ongoing';
+              return `
               <tr style="border-bottom: 1px solid var(--border-color);">
-                <td style="padding: 10px;">${s.name}</td>
-                <td style="padding: 10px;">${s.topic.substring(0, 30)}${s.topic.length > 30 ? '...' : ''}</td>
-                <td style="padding: 10px;"><span class="percentage-badge" style="background: ${s.status === 'Completed' ? '#28a745' : '#003366'}">${s.status}</span></td>
+                <td style="padding: 10px;">${s.name || 'Unknown'}</td>
+                <td style="padding: 10px;">${topic.substring(0, 30)}${topic.length > 30 ? '...' : ''}</td>
+                <td style="padding: 10px;"><span class="percentage-badge" style="background: ${status === 'Completed' ? '#28a745' : '#003366'}">${status}</span></td>
               </tr>
-            `).join('');
+            `}).join('');
           }
         }
       }
@@ -2138,7 +2225,7 @@
 
       } catch (error) {
         console.error("❌ Error loading scholars from backend:", error);
-        alert("Warning: Could not connect to the database. Showing offline cache if available.");
+        showToast("Could not connect to the database. Showing offline cache.", "warning");
 
         // Final fallback just so they don't see a blank screen if the DB is down
         students = JSON.parse(localStorage.getItem('phdStudents')) || [];
@@ -2191,7 +2278,7 @@
 
       if (file) {
         if (file.size > 10 * 1024 * 1024) {
-          alert('File size must be less than 10MB!');
+          showToast('File size must be less than 10MB!', 'error');
           input.value = '';
           preview.innerHTML = 'File too large (Max 10MB)';
           preview.className = 'file-preview invalid';
@@ -2200,7 +2287,7 @@
 
         const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
         if (!validTypes.includes(file.type)) {
-          alert('ONLY JPG/IMG/PNG/PDF files allowed!\n\nCurrent file: ' + file.type);
+          showToast('ONLY JPG/IMG/PNG/PDF files allowed!', 'error');
           input.value = '';
           preview.innerHTML = 'Invalid file type (JPG/IMG/PNG/PDF only)';
           preview.className = 'file-preview invalid';
@@ -2246,7 +2333,7 @@
 
       if (file) {
         if (file.size > 10 * 1024 * 1024) {
-          alert('File size must be less than 10MB!');
+          showToast('File size must be less than 10MB!', 'error');
           input.value = '';
           preview.innerHTML = 'File too large (Max 10MB)';
           preview.className = 'file-preview invalid';
@@ -2255,7 +2342,7 @@
 
         const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
         if (!validTypes.includes(file.type)) {
-          alert('ONLY JPG/IMG/PNG/PDF files allowed!\n\nCurrent file: ' + file.type);
+          showToast('ONLY JPG/IMG/PNG/PDF files allowed!', 'error');
           input.value = '';
           preview.innerHTML = 'Invalid file type (JPG/IMG/PNG/PDF only)';
           preview.className = 'file-preview invalid';
@@ -2303,7 +2390,7 @@
 
       if (file) {
         if (file.size > 10 * 1024 * 1024) {
-          alert('File size must be less than 10MB!');
+          showToast('File size must be less than 10MB!', 'error');
           input.value = '';
           preview.innerHTML = 'File too large (Max 10MB)';
           preview.className = 'file-preview invalid';
@@ -2312,7 +2399,7 @@
 
         const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
         if (!validTypes.includes(file.type)) {
-          alert('ONLY JPG/IMG/PNG/PDF files allowed!\n\nCurrent file: ' + file.type);
+          showToast('ONLY JPG/IMG/PNG/PDF files allowed!', 'error');
           input.value = '';
           preview.innerHTML = 'Invalid file type (JPG/IMG/PNG/PDF only)';
           preview.className = 'file-preview invalid';
@@ -2357,7 +2444,7 @@
 
       if (file) {
         if (file.size > 10 * 1024 * 1024) {
-          alert('File size must be less than 10MB!');
+          showToast('File size must be less than 10MB!', 'error');
           input.value = '';
           preview.innerHTML = 'File too large (Max 10MB)';
           preview.className = 'file-preview invalid';
@@ -2366,7 +2453,7 @@
 
         const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
         if (!validTypes.includes(file.type)) {
-          alert('ONLY JPG/IMG/PNG/PDF files allowed!\n\nCurrent file: ' + file.type);
+          showToast('ONLY JPG/IMG/PNG/PDF files allowed!', 'error');
           input.value = '';
           preview.innerHTML = 'Invalid file type (JPG/IMG/PNG/PDF only)';
           preview.className = 'file-preview invalid';
@@ -2414,7 +2501,7 @@
 
       if (file) {
         if (file.size > 10 * 1024 * 1024) {
-          alert('File size must be less than 10MB!');
+          showToast('File size must be less than 10MB!', 'error');
           input.value = '';
           preview.innerHTML = 'File too large (Max 10MB)';
           preview.className = 'file-preview invalid';
@@ -2422,7 +2509,7 @@
         }
 
         if (file.type !== 'application/pdf') {
-          alert('ONLY PDF files allowed for Synopsis!');
+          showToast('ONLY PDF files allowed!', 'error');
           input.value = '';
           preview.innerHTML = 'Invalid file type (PDF only)';
           preview.className = 'file-preview invalid';
@@ -2466,7 +2553,7 @@
 
       if (file) {
         if (file.size > 10 * 1024 * 1024) {
-          alert('File size must be less than 10MB!');
+          showToast('File size must be less than 10MB!', 'error');
           input.value = '';
           preview.innerHTML = 'File too large (Max 10MB)';
           preview.className = 'file-preview invalid';
@@ -2474,7 +2561,7 @@
         }
 
         if (file.type !== 'application/pdf') {
-          alert('ONLY PDF files allowed for Synopsis!');
+          showToast('ONLY PDF files allowed!', 'error');
           input.value = '';
           preview.innerHTML = 'Invalid file type (PDF only)';
           preview.className = 'file-preview invalid';
@@ -2689,7 +2776,7 @@
           localStorage.setItem('phdStudents', JSON.stringify(students));
         } catch (storageError) {
           console.error(storageError);
-          alert("Warning: Local Storage full! Data might not persist.");
+          showToast("Local Storage full! Data might not persist.", "warning");
         }
 
         // 2. Backend Sync
@@ -2718,14 +2805,14 @@
               }
               localStorage.setItem('phdStudents', JSON.stringify(students));
             }
-            alert('Saved successfully!');
+            showToast('Saved successfully!', 'success');
           } else {
             throw new Error('Backend failed');
           }
         } catch (error) {
           console.warn('Network/Backend error, saved locally');
           // Suppress redundant alerts, just notify successful local save
-          alert('Saved successfully (Local Mode)');
+          showToast('Saved successfully (Offline)', 'info');
         }
 
         // 3. UI Update - Refresh everything to sync new addition
@@ -2737,12 +2824,12 @@
         degreeFiles = [];
         synopsisFiles = [];
 
-        alert('Record saved and synchronized successfully!');
+        showToast('Record saved and synchronized successfully!', 'success');
         showSection('view-records');
 
       } catch (e) {
         console.error("Add Student Critical Error:", e);
-        alert("Error saving student: " + e.message);
+        showToast("Error saving student: " + e.message, "error");
       }
     }
 
@@ -2817,15 +2904,16 @@
         const degreeCount = s.degreeFiles ? s.degreeFiles.length : 0;
         const synopsisCount = s.synopsisFiles ? s.synopsisFiles.length : 0;
         const litCount = s.literaturePapers ? s.literaturePapers.length : 0;
+        const topic = s.topic || s.researchTopic || 'No Topic Provided';
 
         tbody.innerHTML += `
         <tr>
           <td>${s.regNo || '-'}</td>
-          <td>${s.name}</td>
-          <td>${s.email}</td>
-          <td>${s.phone}</td>
-          <td>${s.topic.substring(0, 30)}${s.topic.length > 30 ? '...' : ''}</td>
-          <td>${s.status}</td>
+          <td>${s.name || 'Unknown'}</td>
+          <td>${s.email || '-'}</td>
+          <td>${s.phone || '-'}</td>
+          <td>${topic.substring(0, 30)}${topic.length > 30 ? '...' : ''}</td>
+          <td>${s.status || 'Ongoing'}</td>
           <td>${litCount} Papers</td>
           <td>${synopsisCount}</td>
           <td>${provisionCount}</td>
@@ -2861,7 +2949,7 @@
         // 1. Delete from localStorage first
         const studentIndex = students.findIndex(s => s.email === email);
         if (studentIndex === -1) {
-          alert('Student not found');
+          showToast('Student not found', 'error');
           return;
         }
 
@@ -2886,7 +2974,7 @@
         // 3. Refresh the display
         displayStudents();
         updateDashboardStats();
-        alert('Record deleted successfully');
+        showToast('Record deleted successfully', 'success');
       }
     }
 
@@ -3068,7 +3156,7 @@
       // 1. Update localStorage first
       const studentIndex = students.findIndex(s => s.email === email);
       if (studentIndex === -1) {
-        alert('Student not found');
+        showToast('Student not found', 'error');
         return;
       }
 
@@ -3097,7 +3185,7 @@
 
       // 3. Refresh the display
       displayProgress();
-      alert('Progress updated successfully');
+      showToast('Progress updated successfully', 'success');
     }
 
     // Initialize
@@ -3138,7 +3226,7 @@
           Version: 2024-2025 | PDF Size: 4.2 MB
         </div>
 
-        <button onclick="alert('Simulation: PDF successfully downloaded to your local device.'); closeHandbookModal();"
+        <button onclick="showToast('Handbook PDF downloaded successfully.', 'success'); closeHandbookModal();"
           style="background: #e614b8; color: white; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s;">
           <i class="fas fa-download"></i> Download Handbook PDF
         </button>

@@ -6,11 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login - PhD Database Portal</title>
   <link rel="stylesheet" href="css/login.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
 <body>
 
   <!-- Background Watermark -->
+  <div id="toast-container"></div>
   <div class="background-watermark"></div>
 
 
@@ -82,6 +84,34 @@
     // Initialize registered users from localStorage or empty array
     let registeredUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
 
+    // PREMIUM TOAST SYSTEM
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+
+      let icon = 'info-circle';
+      if (type === 'success') icon = 'check-circle';
+      if (type === 'error') icon = 'exclamation-circle';
+      if (type === 'warning') icon = 'exclamation-triangle';
+
+      toast.innerHTML = `
+        <i class="fas fa-${icon}"></i>
+        <div class="toast-message">${message}</div>
+      `;
+
+      container.appendChild(toast);
+
+      // Trigger animation
+      setTimeout(() => toast.classList.add('show'), 10);
+
+      // Remove after 4 seconds
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
     function toggleForms() {
       document.getElementById('loginSection').classList.toggle('hidden');
       document.getElementById('registerSection').classList.toggle('hidden');
@@ -94,7 +124,7 @@
 
       // 1. Check Hardcoded Admins
       if (username === "lithikka" || username === "admin") {
-        alert("Backend unreachable. Logging in as Admin (Local Mode).");
+        showToast("Backend unreachable. Logging in as Admin (Offline).", "info");
         localStorage.setItem("loggedInUser", "System Administrator");
         localStorage.setItem("userRole", "Admin");
         localStorage.setItem("userEmail", "admin@psgrkcw.ac.in");
@@ -108,7 +138,7 @@
 
       if (localUser) {
         console.log("Found in local storage:", localUser);
-        alert("Login successful (Local Mode)!");
+        showToast("Login successful (Offline Mode)!", "success");
         localStorage.setItem("loggedInUser", localUser.username);
         localStorage.setItem("userRole", localUser.designation || localUser.role);
         localStorage.setItem("userEmail", localUser.email || "");
@@ -144,14 +174,14 @@
           // Backend responded but failed (e.g. 400 User Not Found because DB is empty)
           console.warn("Backend rejected login, trying local:", data.message);
           if (!attemptLocalLogin(username, password)) {
-            alert(data.message || "Invalid credentials");
+            showToast(data.message || "Invalid credentials", "error");
           }
         }
       } catch (error) {
         console.warn('Network error, trying local:', error);
         // Network Error (Backend unreachable)
         if (!attemptLocalLogin(username, password)) {
-          alert("Server unreachable. Please check your internet connection.");
+          showToast("Server unreachable. Please check your connection.", "error");
         }
       }
     });
@@ -167,12 +197,12 @@
       const confirmPass = document.getElementById("regConfirmPassword").value.trim();
 
       if (password !== confirmPass) {
-        alert("Passwords do not match!");
+        showToast("Passwords do not match!", "warning");
         return;
       }
 
       if (username.length < 3) {
-        alert("Username must be at least 3 characters long.");
+        showToast("Username too short!", "warning");
         return;
       }
 
@@ -186,7 +216,7 @@
         const data = await response.json();
 
         if (response.ok) {
-          alert("Registration successful! Please login.");
+          showToast("Registration successful! Please login.", "success");
           toggleForms();
         } else {
           throw new Error(data.message || "Registration failed");
@@ -199,7 +229,7 @@
         registeredUsers.push(newUser);
         localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
 
-        alert("Registration successful (Local Mode)! Please login.");
+        showToast("Registration successful (Offline)! Please login.", "success");
         toggleForms();
       }
     });

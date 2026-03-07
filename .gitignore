@@ -1,2 +1,7 @@
 node_modules
 .env
+*.sqlite
+*.log
+*.txt
+data/
+debug_students.json

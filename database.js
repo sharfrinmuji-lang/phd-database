@@ -9,7 +9,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
         console.log('✅ Connected to SQLite Database (Network Independent).');
 
         db.serialize(() => {
-            // We use JSON storage inside SQLite to perfectly mimic MongoDB's NoSQL behavior
+            // We use JSON storage inside SQLite to perfectly manage NoSQL-style data
             db.run(`CREATE TABLE IF NOT EXISTS students (
                 id TEXT PRIMARY KEY,
                 email TEXT UNIQUE,
